@@ -1,6 +1,6 @@
 [build]
-  command = "echo 'No build step needed'"
-  publish = "."
+  command = "mkdir -p dist && cp Index.html dist/index.html"
+  publish = "dist"
   functions = "netlify/functions"
 
 [[redirects]]

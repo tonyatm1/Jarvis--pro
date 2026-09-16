@@ -384,12 +384,21 @@
         class AKOS {
             constructor() {
                 this.messages = [];
+                this.clientId = this.getClientId();
                 this.isLoading = false;
                 this.recognition = null;
                 this.isListening = false;
                 this.synthesis = null;
                 
                 this.init();
+            }
+
+            getClientId() {
+                const stored = localStorage.getItem('akos_client_id');
+                if (stored) return stored;
+                const id = crypto.randomUUID();
+                localStorage.setItem('akos_client_id', id);
+                return id;
             }
 
             init() {
@@ -506,11 +515,12 @@
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ message: message })
+                        body: JSON.stringify({ message, clientId: this.clientId })
                     });
 
                     if (!response.ok) {
-                        throw new Error(`API error: ${response.status}`);
+                        const problem = await response.json().catch(() => ({}));
+                        throw new Error(problem.error || 'AKOS is temporarily unavailable. Please try again.');
                     }
 
                     const data = await response.json();
@@ -533,7 +543,7 @@
                     console.error('Error:', error);
                     this.messages.push({ 
                         role: 'ai', 
-                        content: `⚠️ Error: ${error.message || 'Failed to get response. Make sure your API key is configured in Netlify.'}`
+                        content: `⚠️ ${error.message || 'Failed to get a response. Please try again.'}`
                     });
                     this.renderChat();
                     this.saveMessagesToStorage();
@@ -571,13 +581,19 @@
                 this.chatContainer.innerHTML = this.messages.map(msg => `
                     <div class="message ${msg.role}">
                         <div class="message-bubble">
-                            ${msg.content}
+                            ${this.escapeHtml(msg.content)}
                         </div>
                     </div>
                 `).join('');
 
                 // Scroll to bottom
                 this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
+            }
+
+            escapeHtml(value) {
+                const element = document.createElement('div');
+                element.textContent = String(value);
+                return element.innerHTML.replace(/\n/g, '<br>');
             }
 
             saveMessagesToStorage() {
@@ -607,12 +623,19 @@
                 }
             }
 
-            clearConversation() {
+            async clearConversation() {
                 if (confirm('Clear all messages? This cannot be undone.')) {
                     this.messages = [];
                     localStorage.removeItem('akos_messages');
                     this.renderChat();
                     this.updateMemoryStatus();
+                    try {
+                        await fetch(`/.netlify/functions/chat?clientId=${encodeURIComponent(this.clientId)}`, {
+                            method: 'DELETE'
+                        });
+                    } catch (error) {
+                        console.warn('Server memory could not be cleared yet');
+                    }
                 }
             }
         }
