@@ -7,8 +7,19 @@
     "dev": "netlify dev",
     "build": "echo 'No build required'"
   },
-  "keywords": ["ai", "assistant", "voice", "chatbot"],
+  "keywords": [
+    "ai",
+    "assistant",
+    "voice",
+    "chatbot"
+  ],
   "author": "",
   "license": "MIT",
-  "devDependencies": {}
+  "dependencies": {
+    "@netlify/database": "^2.0.1",
+    "drizzle-orm": "^1.0.0-beta.22"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^1.0.0-beta.22"
+  }
 }
