@@ -1,0 +1,14 @@
+{
+  "name": "akos-prototype",
+  "version": "0.1.0",
+  "description": "AKOS - Personal AI Assistant v0.1",
+  "main": "index.html",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'No build required'"
+  },
+  "keywords": ["ai", "assistant", "voice", "chatbot"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {}
+}
